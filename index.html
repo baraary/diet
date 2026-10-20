@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#4f46e5" id="meta-theme-color" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="کالری‌شمار هوتن و فاطمه" />
+  <title>دستیار هوشمند تغذیه | هوتن و فاطمه</title>
+
+  <!-- فونت وزیرمتن -->
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Vazirmatn', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Vazirmatn', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass-card {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    @keyframes pulse-soft {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .animate-pulse-soft {
+      animation: pulse-soft 2.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen pb-24 transition-colors duration-300">
+
+  <!-- نوار بالایی و تغییر پروفایل -->
+  <header id="app-header" class="sticky top-0 z-30 bg-gradient-to-l from-indigo-600 to-violet-600 text-white shadow-lg transition-all duration-500">
+    <div class="max-w-3xl mx-auto px-4 py-3">
+      <div class="flex items-center justify-between gap-2">
+        <!-- سوئیچ پروفایل هوتن و فاطمه -->
+        <div class="flex bg-black/20 p-1 rounded-2xl backdrop-blur-sm">
+          <button onclick="switchProfile('hootan')" id="btn-prof-hootan" class="px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5">
+            <span>👨🏻</span>
+            <span>هوتن</span>
+          </button>
+          <button onclick="switchProfile('fatemeh')" id="btn-prof-fatemeh" class="px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5">
+            <span>👩🏻</span>
+            <span>فاطمه</span>
+          </button>
+        </div>
+
+        <!-- نشانگر استریک و ابزارها -->
+        <div class="flex items-center gap-1.5">
+          <div id="streak-badge" class="bg-white/20 px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1" title="روزهای پیوسته ثبت غذا">
+            <span>🔥</span>
+            <span id="streak-count">0</span>
+            <span class="hidden sm:inline">روز</span>
+          </div>
+
+          <button onclick="syncWithGitHub(false)" id="btn-sync-status" class="bg-white/20 hover:bg-white/30 p-2 rounded-xl text-xs font-bold flex items-center gap-1 transition" title="همگام‌سازی ابری">
+            <span id="sync-icon">☁️</span>
+          </button>
+
+          <button onclick="toggleDarkMode()" class="bg-white/20 hover:bg-white/30 p-2 rounded-xl text-xs transition" title="حالت شب/روز">
+            <span id="theme-icon">🌙</span>
+          </button>
+
+          <button onclick="openModal('modal-settings')" class="bg-white/20 hover:bg-white/30 p-2 rounded-xl text-xs transition" title="تنظیمات و اتصال">
+            ⚙️
+          </button>
+        </div>
+      </div>
+
+      <!-- نوار انتخاب تاریخ -->
+      <div class="flex items-center justify-between mt-3 bg-white/10 rounded-xl px-3 py-1.5 text-sm">
+        <button onclick="changeDate(-1)" class="px-2 py-0.5 hover:bg-white/20 rounded-lg font-bold">❯ روز قبل</button>
+        <div class="flex items-center gap-2">
+          <span id="current-date-label" class="font-bold">امروز</span>
+          <button onclick="goToToday()" id="btn-today" class="hidden text-xs bg-white text-indigo-700 px-2 py-0.5 rounded-md font-bold">برو به امروز</button>
+        </div>
+        <button onclick="changeDate(1)" class="px-2 py-0.5 hover:bg-white/20 rounded-lg font-bold">روز بعد ❮</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- محتوای اصلی -->
+  <main class="max-w-3xl mx-auto px-4 pt-4 space-y-5">
+
+    <!-- تب‌های ناوبری بالا -->
+    <div class="grid grid-cols-3 bg-white dark:bg-slate-800 p-1 rounded-2xl shadow-sm border border-slate-200/70 dark:border-slate-700">
+      <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="py-2 rounded-xl text-sm font-bold transition bg-indigo-600 text-white">
+        📊 داشبورد امروز
+      </button>
+      <button onclick="switchTab('analytics')" id="tab-btn-analytics" class="py-2 rounded-xl text-sm font-bold transition text-slate-600 dark:text-slate-300">
+        📈 نمودار و آمار
+      </button>
+      <button onclick="switchTab('profile')" id="tab-btn-profile" class="py-2 rounded-xl text-sm font-bold transition text-slate-600 dark:text-slate-300">
+        ⚖️ وزن و اهداف
+      </button>
+    </div>
+
+    <!-- ==================== تب ۱: داشبورد روزانه ==================== -->
+    <section id="tab-dashboard" class="space-y-5">
+
+      <!-- کارت لایه اول: کالری خالص و درشت‌مغذی‌ها -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
+          <!-- حلقه و خلاصه کالری -->
+          <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
+            <div class="relative w-28 h-28 flex items-center justify-center shrink-0">
+              <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle class="text-slate-100 dark:text-slate-700" stroke-width="10" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
+                <circle id="cal-ring-progress" class="text-indigo-600 transition-all duration-700" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span class="text-[11px] text-slate-400">باقی‌مانده</span>
+                <span id="cal-remaining" class="text-xl font-extrabold text-slate-800 dark:text-white">0</span>
+                <span class="text-[10px] text-slate-400">kcal</span>
+              </div>
+            </div>
+
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center justify-between sm:justify-start sm:gap-6 text-xs">
+                <span class="text-slate-400">🎯 هدف روزانه:</span>
+                <span class="font-bold text-sm"><span id="cal-target">2000</span> کالری</span>
+              </div>
+              <div class="flex items-center justify-between sm:justify-start sm:gap-6 text-xs">
+                <span class="text-slate-400">🍽️ دریافتی غذا:</span>
+                <span class="font-bold text-sm text-emerald-600 dark:text-emerald-400"><span id="cal-eaten">0</span> کالری</span>
+              </div>
+              <div class="flex items-center justify-between sm:justify-start sm:gap-6 text-xs">
+                <span class="text-slate-400">🔥 سوزانده‌شده:</span>
+                <span class="font-bold text-sm text-orange-500"><span id="cal-burned">0</span> کالری</span>
+              </div>
+              <div class="pt-1 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between sm:justify-start sm:gap-6 text-xs">
+                <span class="font-bold text-slate-600 dark:text-slate-300">⚡ کالری خالص:</span>
+                <span class="font-extrabold text-sm text-indigo-600 dark:text-indigo-400"><span id="cal-net">0</span> کالری</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- دکمه پیشنهاد هوشمند الان چی بخورم -->
+          <button onclick="askWhatToEat()" class="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-3 rounded-2xl text-xs font-bold shadow-md flex items-center justify-center gap-2 transition shrink-0">
+            <span class="text-base">🤔</span>
+            <div class="text-right">
+              <div>الان چی بخورم؟</div>
+              <div class="text-[10px] font-normal opacity-90">پیشنهاد هوشمند با کالریِ باقی‌مانده</div>
+            </div>
+          </button>
+        </div>
+
+        <!-- ۳ درشت‌مغذی اصلی (لایه اول) -->
+        <div class="grid grid-cols-3 gap-3 pt-4">
+          <!-- پروتئین -->
+          <div class="bg-rose-50/70 dark:bg-rose-950/30 p-3 rounded-2xl border border-rose-100 dark:border-rose-900/40">
+            <div class="flex justify-between items-center text-xs mb-1">
+              <span class="font-bold text-rose-700 dark:text-rose-300">🥩 پروتئین</span>
+              <span class="text-[11px] text-slate-500 dark:text-slate-400"><b id="macro-p-val" class="text-slate-800 dark:text-white">0</b>/<span id="macro-p-max">120</span>g</span>
+            </div>
+            <div class="w-full bg-rose-200/60 dark:bg-rose-900/50 h-2 rounded-full overflow-hidden">
+              <div id="macro-p-bar" class="bg-rose-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- کربوهیدرات -->
+          <div class="bg-amber-50/70 dark:bg-amber-950/30 p-3 rounded-2xl border border-amber-100 dark:border-amber-900/40">
+            <div class="flex justify-between items-center text-xs mb-1">
+              <span class="font-bold text-amber-700 dark:text-amber-300">🍞 کربوهیدرات</span>
+              <span class="text-[11px] text-slate-500 dark:text-slate-400"><b id="macro-c-val" class="text-slate-800 dark:text-white">0</b>/<span id="macro-c-max">200</span>g</span>
+            </div>
+            <div class="w-full bg-amber-200/60 dark:bg-amber-900/50 h-2 rounded-full overflow-hidden">
+              <div id="macro-c-bar" class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- چربی -->
+          <div class="bg-sky-50/70 dark:bg-sky-950/30 p-3 rounded-2xl border border-sky-100 dark:border-sky-900/40">
+            <div class="flex justify-between items-center text-xs mb-1">
+              <span class="font-bold text-sky-700 dark:text-sky-300">🥑 چربی</span>
+              <span class="text-[11px] text-slate-500 dark:text-slate-400"><b id="macro-f-val" class="text-slate-800 dark:text-white">0</b>/<span id="macro-f-max">65</span>g</span>
+            </div>
+            <div class="w-full bg-sky-200/60 dark:bg-sky-900/50 h-2 rounded-full overflow-hidden">
+              <div id="macro-f-bar" class="bg-sky-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- لایه دوم: شاخص‌های ریز سلامتی (فیبر، قند، سدیم) -->
+        <div class="grid grid-cols-3 gap-2.5 pt-3 mt-3 border-t border-slate-100 dark:border-slate-700/60 text-xs">
+          <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/40 px-3 py-2 rounded-xl">
+            <span class="text-slate-500 dark:text-slate-300">🥦 فیبر:</span>
+            <span class="font-bold text-emerald-600 dark:text-emerald-400"><span id="micro-fiber">0</span>/<span id="micro-fiber-max">28</span>g</span>
+          </div>
+          <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/40 px-3 py-2 rounded-xl">
+            <span class="text-slate-500 dark:text-slate-300">🍬 قند:</span>
+            <span id="micro-sugar-wrap" class="font-bold text-slate-700 dark:text-slate-200"><span id="micro-sugar">0</span>/30g</span>
+          </div>
+          <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/40 px-3 py-2 rounded-xl">
+            <span class="text-slate-500 dark:text-slate-300">🧂 سدیم:</span>
+            <span id="micro-sodium-wrap" class="font-bold text-slate-700 dark:text-slate-200"><span id="micro-sodium">0</span>mg</span>
+          </div>
+        </div>
+        <div id="sodium-warning" class="hidden mt-2 text-[11px] bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 px-3 py-1.5 rounded-xl border border-amber-200 dark:border-amber-800">
+          ⚠️ <b>توجه:</b> سدیم (نمک) دریافتی امروز بالاست. برای جلوگیری از احتباس آب و نوسان کاذب وزن روی ترازو، ۲ لیوان آب بیشتر بنوشید.
+        </div>
+      </div>
+
+      <!-- ثبت هوشمند وعده غذایی (چت + عکس + اشتراک دو نفره) -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-extrabold text-base flex items-center gap-1.5">
+            <span>✨</span>
+            <span>ثبت هوشمند وعده غذایی</span>
+          </h2>
+          <button onclick="openManualMealModal()" class="text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
+            + ثبت دستی اعداد
+          </button>
+        </div>
+
+        <!-- انتخاب وعده -->
+        <div class="grid grid-cols-4 gap-2 text-xs font-bold">
+          <button type="button" onclick="selectMealCat('صبحانه')" id="cat-صبحانه" class="meal-cat-btn py-2 rounded-xl border border-indigo-600 bg-indigo-600 text-white transition">🍳 صبحانه</button>
+          <button type="button" onclick="selectMealCat('ناهار')" id="cat-ناهار" class="meal-cat-btn py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 transition">🍲 ناهار</button>
+          <button type="button" onclick="selectMealCat('شام')" id="cat-شام" class="meal-cat-btn py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 transition">🥗 شام</button>
+          <button type="button" onclick="selectMealCat('میان‌وعده')" id="cat-میان‌وعده" class="meal-cat-btn py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 transition">🍎 میان‌وعده</button>
+        </div>
+
+        <!-- ورودی متن و عکس -->
+        <div class="relative">
+          <textarea id="ai-food-input" rows="2" placeholder="مثلاً: ۸ قاشق پلو، ۴ قاشق قورمه‌سبزی با ۳ تکه گوشت و یک پیاله ماست..." class="w-full rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+          
+          <!-- پیش‌نمایش عکس انتخاب‌شده -->
+          <div id="photo-preview-box" class="hidden mt-2 flex items-center justify-between bg-indigo-50 dark:bg-indigo-950/50 p-2 rounded-xl border border-indigo-200 dark:border-indigo-800">
+            <div class="flex items-center gap-2 text-xs text-indigo-700 dark:text-indigo-300 font-bold">
+              <img id="photo-preview-img" src="" class="w-10 h-10 object-cover rounded-lg" />
+              <span>تصویر آماده تحلیل با هوش مصنوعی</span>
+            </div>
+            <button onclick="clearSelectedPhoto()" class="text-rose-500 text-xs font-bold px-2">حذف ✕</button>
+          </div>
+        </div>
+
+        <!-- گزینه‌های ویژه: با هم خوردیم + ذخیره در روتین -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50 dark:bg-slate-700/30 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-700 text-xs">
+          <div class="flex items-center gap-2 flex-wrap">
+            <label class="flex items-center gap-1.5 cursor-pointer font-bold text-slate-700 dark:text-slate-200">
+              <input type="checkbox" id="chk-shared-meal" onchange="toggleSharedMultiplier()" class="w-4 h-4 rounded accent-indigo-600" />
+              <span>💑 این وعده رو با <span id="spouse-name-label" class="text-indigo-600 dark:text-indigo-400">فاطمه</span> خوردیم!</span>
+            </label>
+            <select id="shared-multiplier" class="hidden bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 text-xs font-bold">
+              <option value="0.5">سهم همسر: نصف من (۵۰٪)</option>
+              <option value="0.7" selected>سهم همسر: کمی کمتر (۷۰٪)</option>
+              <option value="1">سهم همسر: هم‌اندازه من (۱۰۰٪)</option>
+              <option value="1.3">سهم همسر: بیشتر از من (۱۳۰٪)</option>
+              <option value="1.5">سهم همسر: ۱.۵ برابر من (۱۵۰٪)</option>
+            </select>
+          </div>
+
+          <label class="flex items-center gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300">
+            <input type="checkbox" id="chk-save-routine" class="w-4 h-4 rounded accent-amber-500" />
+            <span>⭐ ذخیره در روتین‌های من</span>
+          </label>
+        </div>
+
+        <!-- دکمه‌های ارسال و دوربین -->
+        <div class="flex items-center gap-2">
+          <input type="file" id="food-photo-input" accept="image/*" class="hidden" onchange="handlePhotoSelected(event)" />
+          <button type="button" onclick="document.getElementById('food-photo-input').click()" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-3 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition shrink-0">
+            <span class="text-base">📷</span>
+            <span>عکس غذا / جدول</span>
+          </button>
+
+          <button type="button" id="btn-ai-submit" onclick="analyzeAndLogFood()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-2xl text-sm font-bold shadow-md flex items-center justify-center gap-2 transition">
+            <span>تحلیل و ثبت هوشمند</span>
+            <span>🚀</span>
+          </button>
+        </div>
+
+        <!-- نوار روتین‌های پرتکرار من (ثبت با یک لمس) -->
+        <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-slate-500 dark:text-slate-400">⚡ روتین‌های پرتکرار (ثبت با یک لمس):</span>
+          </div>
+          <div id="routines-container" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+            <!-- توسط جاوااسکریپت پر می‌شود -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ردیف آب + ورزش روزانه -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- شمارنده لیوان آب -->
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-4 shadow-sm border border-slate-200/70 dark:border-slate-700 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="font-bold text-sm flex items-center gap-1">
+                <span>💧</span>
+                <span>آب مصرفی امروز</span>
+              </h3>
+              <p class="text-[11px] text-slate-400">هدف: <span id="water-target-count">8</span> لیوان (<span id="water-liters">0</span> لیتر)</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="changeWater(-1)" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 font-bold text-sm hover:bg-slate-200">-</button>
+              <span id="water-count" class="font-extrabold text-base text-sky-600 dark:text-sky-400 px-1">0</span>
+              <button onclick="changeWater(1)" class="w-8 h-8 rounded-xl bg-sky-500 text-white font-bold text-sm hover:bg-sky-600 shadow-sm">+</button>
+            </div>
+          </div>
+          <div id="water-glasses-visual" class="flex flex-wrap gap-1.5 pt-2"></div>
+        </div>
+
+        <!-- ثبت ورزش و کالری‌سوزی -->
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-4 shadow-sm border border-slate-200/70 dark:border-slate-700 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="font-bold text-sm flex items-center gap-1">
+                <span>🏃‍♂️</span>
+                <span>ورزش و تحرک امروز</span>
+              </h3>
+              <p class="text-[11px] text-slate-400">مجموع سوزانده‌شده: <b id="exercise-total-cal" class="text-orange-500">0</b> کالری</p>
+            </div>
+            <button onclick="openModal('modal-exercise')" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm transition">
+              + ثبت ورزش
+            </button>
+          </div>
+          <div id="exercise-list" class="space-y-1.5 max-h-24 overflow-y-auto text-xs">
+            <!-- لیست ورزش‌های امروز -->
+          </div>
+        </div>
+      </div>
+
+      <!-- لیست و جدول وعده‌های ثبت‌شده امروز -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-extrabold text-base flex items-center gap-1.5">
+            <span>📋</span>
+            <span>وعده‌های ثبت‌شده</span>
+          </h2>
+          <span id="meals-count-badge" class="text-xs bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-lg font-bold text-slate-600 dark:text-slate-300">0 مورد</span>
+        </div>
+
+        <div id="meals-list-container" class="space-y-3">
+          <!-- وعده‌ها اینجا رندر می‌شوند -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== تب ۲: نمودارها و آمار ==================== -->
+    <section id="tab-analytics" class="hidden space-y-5">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-extrabold text-sm">📊 روند کالری خالص در ۷ روز گذشته</h3>
+          <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition">
+            <span>📥</span>
+            <span>دانلود جدول اکسل (CSV)</span>
+          </button>
+        </div>
+        <div class="h-60">
+          <canvas id="chart-weekly-calories"></canvas>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700">
+          <h3 class="font-extrabold text-sm mb-3">🍩 سهم درشت‌مغذی‌های امروز</h3>
+          <div class="h-52 flex items-center justify-center">
+            <canvas id="chart-macros-pie"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700">
+          <h3 class="font-extrabold text-sm mb-3">⚖️ نمودار تغییرات وزن</h3>
+          <div class="h-52">
+            <canvas id="chart-weight-trend"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== تب ۳: وزن، BMI و اهداف ==================== -->
+    <section id="tab-profile" class="hidden space-y-5">
+      <!-- کارت وضعیت وزن و BMI -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-extrabold text-base">⚖️ پیگیری وزن و شاخص توده بدنی (BMI)</h3>
+            <p class="text-xs text-slate-400 mt-0.5">ثبت منظم وزن باعث تنظیم دقیق‌تر کالری هدف می‌شود</p>
+          </div>
+          <span id="bmi-badge" class="text-xs font-bold px-3 py-1 rounded-xl bg-emerald-100 text-emerald-700">BMI: --</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 text-center bg-slate-50 dark:bg-slate-700/40 p-3.5 rounded-2xl">
+          <div>
+            <div class="text-[11px] text-slate-400">وزن شروع</div>
+            <div class="font-extrabold text-base mt-0.5"><span id="weight-start">--</span> <span class="text-xs font-normal">kg</span></div>
+          </div>
+          <div class="border-x border-slate-200 dark:border-slate-600">
+            <div class="text-[11px] text-slate-400">وزن فعلی</div>
+            <div class="font-extrabold text-lg text-indigo-600 dark:text-indigo-400 mt-0.5"><span id="weight-current">--</span> <span class="text-xs font-normal">kg</span></div>
+          </div>
+          <div>
+            <div class="text-[11px] text-slate-400">وزن هدف</div>
+            <div class="font-extrabold text-base text-emerald-600 mt-0.5"><span id="weight-target">--</span> <span class="text-xs font-normal">kg</span></div>
+          </div>
+        </div>
+
+        <!-- نوار پیشرفت تا وزن هدف -->
+        <div>
+          <div class="flex justify-between text-xs mb-1">
+            <span class="text-slate-500">میزان پیشرفت تا وزن هدف:</span>
+            <span id="weight-progress-pct" class="font-bold text-indigo-600">0%</span>
+          </div>
+          <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+            <div id="weight-progress-bar" class="bg-gradient-to-l from-indigo-500 to-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- ثبت وزن جدید -->
+        <div class="flex items-center gap-2 pt-2">
+          <input type="number" step="0.1" id="new-weight-input" placeholder="وزن جدید (مثلاً 74.5)" class="flex-1 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3.5 py-2.5 text-sm" />
+          <button onclick="logNewWeight()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-3 rounded-xl transition">
+            ثبت وزن جدید
+          </button>
+        </div>
+      </div>
+
+      <!-- کارت مشخصات و بازمحاسبه هوشمند -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700 flex items-center justify-between">
+        <div>
+          <h3 class="font-extrabold text-sm">🎯 ویرایش مشخصات و اهداف روزانه</h3>
+          <p class="text-xs text-slate-400 mt-1">تغییر قد، سن، میزان تحرک یا هدف (کاهش/تثبیت/افزایش وزن)</p>
+        </div>
+        <button onclick="openOnboardingWizard(true)" class="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold transition">
+          باز کردن راه‌انداز جادویی ✨
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== مودال ۱: راه‌انداز جادویی (Onboarding Wizard) ==================== -->
+  <div id="modal-onboarding" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto space-y-4">
+      <div class="text-center space-y-1">
+        <div id="wiz-emoji" class="text-4xl">👋</div>
+        <h2 id="wiz-title" class="text-lg font-extrabold">خوش اومدی!</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">مشخصاتت رو وارد کن تا کالری و درشت‌مغذی‌های روزانه‌ات به صورت علمی محاسبه بشه.</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <label class="block font-bold mb-1 text-slate-600 dark:text-slate-300">جنسیت</label>
+          <select id="wiz-gender" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-bold">
+            <option value="male">مرد</option>
+            <option value="female">زن</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-600 dark:text-slate-300">سن (سال)</label>
+          <input type="number" id="wiz-age" placeholder="مثلاً 30" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-bold" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-600 dark:text-slate-300">قد (سانتی‌متر)</label>
+          <input type="number" id="wiz-height" placeholder="مثلاً 175" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-bold" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1 text-slate-600 dark:text-slate-300">وزن فعلی (کیلوگرم)</label>
+          <input type="number" step="0.1" id="wiz-weight" placeholder="مثلاً 78" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-bold" />
+        </div>
+      </div>
+
+      <div class="text-xs">
+        <label class="block font-bold mb-1 text-slate-600 dark:text-slate-300">وزن هدف (کیلوگرم)</label>
+        <input type="number" step="0.1" id="wiz-target-weight" placeholder="مثلاً 72" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-bold" />
+      </div>
+
+      <div class="text-xs">
+        <label class="block font-bold mb-1 text-slate-600 dark:text-slate-300">میزان فعالیت و تحرک روزانه</label>
+        <select id="wiz-activity" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-bold">
+          <option value="1.2">کم‌تحرک (کار پشت میز، بدون ورزش)</option>
+          <option value="1.375" selected>تحرک سبک (پیاده‌روی یا ۱ تا ۳ روز ورزش در هفته)</option>
+          <option value="1.55">تحرک متوسط (۳ تا ۵ روز ورزش در هفته)</option>
+          <option value="1.725">پرتحرک (۶ تا ۷ روز ورزش سنگین)</option>
+        </select>
+      </div>
+
+      <div class="text-xs">
+        <label class="block font-bold mb-1 text-slate-600 dark:text-slate-300">هدف شما چیست؟</label>
+        <select id="wiz-goal" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-bold">
+          <option value="lose_fast">کاهش وزن سریع (۵۰۰- کالری در روز)</option>
+          <option value="lose_mild" selected>کاهش وزن ملایم و اصولی (۳۵۰- کالری در روز)</option>
+          <option value="maintain">تثبیت وزن فعلی و تغذیه سالم</option>
+          <option value="recomp">عضله‌سازی هم‌زمان با چربی‌سوزی (پروتئین بالا)</option>
+          <option value="gain">افزایش وزن و عضله‌سازی (+۳۰۰ کالری در روز)</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <button onclick="saveOnboardingWizard()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl text-sm shadow-lg transition">
+          محاسبه هوشمند و شروع 🚀
+        </button>
+        <button id="wiz-cancel-btn" onclick="closeModal('modal-onboarding')" class="hidden px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-700 text-xs font-bold">
+          بستن
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== مودال ۲: پیشنهاد هوشمند «الان چی بخورم؟» ==================== -->
+  <div id="modal-what-to-eat" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-base flex items-center gap-1.5">
+          <span>🍽️</span>
+          <span>پیشنهاد هوشمند برای ادامه امروز</span>
+        </h3>
+        <button onclick="closeModal('modal-what-to-eat')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+      <div id="what-to-eat-content" class="text-xs leading-relaxed space-y-3 max-h-[65vh] overflow-y-auto">
+        <!-- پیشنهادهای هوش مصنوعی -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== مودال ۳: ثبت دستی یا ویرایش وعده ==================== -->
+  <div id="modal-meal-edit" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-3 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 id="meal-modal-title" class="font-extrabold text-base">✏️ ثبت / ویرایش وعده</h3>
+        <button onclick="closeModal('modal-meal-edit')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <input type="hidden" id="edit-meal-id" />
+
+      <div class="grid grid-cols-2 gap-2.5 text-xs">
+        <div class="col-span-2">
+          <label class="block font-bold mb-1">نام غذا و مقدار</label>
+          <input type="text" id="edit-meal-name" placeholder="مثلاً ۲ کف دست سنگک و نیمرو" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">وعده</label>
+          <select id="edit-meal-cat" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5">
+            <option value="صبحانه">صبحانه</option>
+            <option value="ناهار">ناهار</option>
+            <option value="شام">شام</option>
+            <option value="میان‌وعده">میان‌وعده</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold mb-1">کالری (kcal)</label>
+          <input type="number" id="edit-meal-cal" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">پروتئین (گرم)</label>
+          <input type="number" step="0.1" id="edit-meal-p" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">کربوهیدرات (گرم)</label>
+          <input type="number" step="0.1" id="edit-meal-c" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">چربی (گرم)</label>
+          <input type="number" step="0.1" id="edit-meal-f" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">فیبر (گرم)</label>
+          <input type="number" step="0.1" id="edit-meal-fiber" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">قند (گرم)</label>
+          <input type="number" step="0.1" id="edit-meal-sugar" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">سدیم (میلی‌گرم)</label>
+          <input type="number" id="edit-meal-sodium" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5" />
+        </div>
+      </div>
+
+      <button onclick="saveEditedMeal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl text-sm transition mt-2">
+        ذخیره تغییرات ✅
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== مودال ۴: ثبت ورزش ==================== -->
+  <div id="modal-exercise" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-base">🏃‍♂️ ثبت فعالیت ورزشی</h3>
+        <button onclick="closeModal('modal-exercise')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold mb-1">توضیح ورزش (برای محاسبه هوشمند یا دستی)</label>
+          <input type="text" id="ex-title-input" placeholder="مثلاً: ۴۵ دقیقه پیاده‌روی تند یا ۳۰ دقیقه بدنسازی" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">کالری سوزانده‌شده (اختیاری - خالی بگذارید تا هوش مصنوعی حساب کند)</label>
+          <input type="number" id="ex-cal-input" placeholder="مثلاً 220" class="w-full rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3" />
+        </div>
+        <button id="btn-save-exercise" onclick="addExercise()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-2xl text-sm transition">
+          ثبت فعالیت 🔥
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== مودال ۵: تنظیمات هوش مصنوعی و گیت‌هاب + لینک فاطمه ==================== -->
+  <div id="modal-settings" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-base">⚙️ تنظیمات هوش مصنوعی و همگام‌سازی</h3>
+        <button onclick="closeModal('modal-settings')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <!-- کلید جمینای -->
+        <div class="bg-slate-50 dark:bg-slate-700/40 p-3.5 rounded-2xl space-y-1.5 border border-slate-200/70 dark:border-slate-700">
+          <label class="block font-bold text-slate-700 dark:text-slate-200">🔑 کلید هوش مصنوعی (Gemini API Key)</label>
+          <input type="password" id="cfg-gemini-key" placeholder="AIzaSy..." dir="ltr" class="w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-mono text-xs" />
+          <p class="text-[11px] text-slate-400">از سایت <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-500 underline">Google AI Studio</a> به صورت رایگان دریافت کنید.</p>
+        </div>
+
+        <!-- همگام‌سازی گیت‌هاب -->
+        <div class="bg-slate-50 dark:bg-slate-700/40 p-3.5 rounded-2xl space-y-2 border border-slate-200/70 dark:border-slate-700">
+          <label class="block font-bold text-slate-700 dark:text-slate-200">☁️ توکن گیت‌هاب (GitHub Token - با دسترسی gist)</label>
+          <input type="password" id="cfg-github-token" placeholder="ghp_..." dir="ltr" class="w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-mono text-xs" />
+
+          <label class="block font-bold text-slate-700 dark:text-slate-200 pt-1">📂 شناسه دیتابیس (Gist ID)</label>
+          <div class="flex gap-2">
+            <input type="text" id="cfg-gist-id" placeholder="خالی بگذارید و دکمه ساخت خودکار را بزنید" dir="ltr" class="flex-1 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-mono text-xs" />
+            <button onclick="createNewGistDatabase()" id="btn-create-gist" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl font-bold shrink-0">
+              ساخت خودکار ✨
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-400">با زدن «ساخت خودکار»، دیتابیس دو نفره شما در گیت‌هاب ساخته می‌شود.</p>
+        </div>
+
+        <!-- دکمه طلایی اشتراک‌گذاری با فاطمه -->
+        <div class="bg-rose-50 dark:bg-rose-950/40 p-3.5 rounded-2xl border border-rose-200 dark:border-rose-800/60 space-y-2">
+          <div class="font-bold text-rose-700 dark:text-rose-300">🎁 لینک جادویی ورود فاطمه</div>
+          <p class="text-[11px] text-slate-600 dark:text-slate-300">وقتی کلیدها را ذخیره کردید، با زدن دکمه زیر یک لینک اختصاصی کپی می‌شود. آن را برای فاطمه بفرستید تا بدون نیاز به وارد کردن هیچ رمزی، مستقیم متصل شود!</p>
+          <button onclick="copyPartnerMagicLink()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl transition shadow-sm">
+            کپی لینک آماده برای فاطمه 📋
+          </button>
+        </div>
+
+        <button onclick="saveSettings()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl text-sm shadow-md transition">
+          ذخیره تنظیمات و همگام‌سازی ✅
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- اعلان (Toast) -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2">
+    <span id="toast-text"></span>
+  </div>
+
+  <!-- ==================== منطق برنامه (JavaScript) ==================== -->
+  <script>
+    const STORAGE_KEY = 'hootan_fatemeh_nutrition_v1';
+    let selectedMealCat = 'صبحانه';
+    let selectedPhotoBase64 = null;
+    let selectedPhotoMime = null;
+    let chartWeekly = null;
+    let chartMacros = null;
+    let chartWeight = null;
+
+    const DEFAULT_ROUTINES = [
+      { title: '۲ عدد تخم‌مرغ آب‌پز', calories: 155, protein: 12.6, carbs: 1.1, fat: 10.6, fiber: 0, sugar: 1, sodium: 124 },
+      { title: '۱ کف دست نان سنگک + پنیر فتا', calories: 150, protein: 6.5, carbs: 17, fat: 6, fiber: 1.5, sugar: 0.5, sodium: 320 },
+      { title: '۱ فنجان قهوه اسپرسو / آمریکانو', calories: 5, protein: 0.3, carbs: 0.8, fat: 0, fiber: 0, sugar: 0, sodium: 5 },
+      { title: '۱ عدد سیب متوسط', calories: 95, protein: 0.5, carbs: 25, fat: 0.3, fiber: 4.4, sugar: 19, sodium: 2 },
+      { title: '۱۵۰ گرم سینه مرغ گریل', calories: 248, protein: 46.5, carbs: 0, fat: 5.4, fiber: 0, sugar: 0, sodium: 110 }
+    ];
+
+    function createEmptyProfile(name, gender) {
+      return {
+        name,
+        gender,
+        onboarded: false,
+        stats: { age: 30, height: gender === 'male' ? 178 : 165, weight: gender === 'male' ? 78 : 62, startWeight: gender === 'male' ? 78 : 62, targetWeight: gender === 'male' ? 74 : 58, activity: 1.375, goal: 'lose_mild' },
+        targets: { calories: gender === 'male' ? 2100 : 1650, protein: gender === 'male' ? 130 : 95, carbs: gender === 'male' ? 210 : 165, fat: gender === 'male' ? 65 : 55, fiber: gender === 'male' ? 30 : 25, sugar: 30, sodium: 2300, water: 8 },
+        routines: [...DEFAULT_ROUTINES],
+        weightHistory: [],
+        days: {}
+      };
+    }
+
+    let state = {
+      activeProfile: 'hootan',
+      currentDate: getTodayStr(),
+      darkMode: false,
+      config: {
+        geminiKey: '',
+        githubToken: '',
+        gistId: ''
+      },
+      profiles: {
+        hootan: createEmptyProfile('هوتن', 'male'),
+        fatemeh: createEmptyProfile('فاطمه', 'female')
+      }
+    };
+
+    function getTodayStr() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function showToast(msg, duration = 3200) {
+      const t = document.getElementById('toast');
+      document.getElementById('toast-text').textContent = msg;
+      t.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.add('hidden'), duration);
+    }
+
+    function checkMagicLinkConfig() {
+      if (window.location.hash && window.location.hash.startsWith('#magic=')) {
+        try {
+          const encoded = window.location.hash.replace('#magic=', '');
+          const decoded = JSON.parse(atob(encoded));
+          if (decoded.geminiKey) state.config.geminiKey = decoded.geminiKey;
+          if (decoded.githubToken) state.config.githubToken = decoded.githubToken;
+          if (decoded.gistId) state.config.gistId = decoded.gistId;
+          if (decoded.profile) state.activeProfile = decoded.profile;
+          saveLocalState();
+          history.replaceState(null, document.title, window.location.pathname + window.location.search);
+          showToast('🎉 اتصال هوشمند با موفقیت انجام شد!');
+        } catch (e) {
+          console.error('Magic link parse error', e);
+        }
+      }
+    }
+
+    function loadLocalState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          state = {
+            ...state,
+            ...parsed,
+            config: { ...state.config, ...(parsed.config || {}) },
+            profiles: {
+              hootan: { ...createEmptyProfile('هوتن', 'male'), ...(parsed.profiles?.hootan || {}) },
+              fatemeh: { ...createEmptyProfile('فاطمه', 'female'), ...(parsed.profiles?.fatemeh || {}) }
+            }
+          };
+        } catch (e) { console.error(e); }
+      }
+      state.currentDate = getTodayStr();
+      checkMagicLinkConfig();
+      applyTheme();
+      renderAll();
+
+      if (state.config.githubToken && state.config.gistId) {
+        syncWithGitHub(false);
+      } else {
+        checkOnboardingNeeded();
+      }
+    }
+
+    function saveLocalState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function checkOnboardingNeeded() {
+      const prof = state.profiles[state.activeProfile];
+      if (!prof.onboarded) {
+        openOnboardingWizard(false);
+      }
+    }
+
+    function switchProfile(profKey) {
+      state.activeProfile = profKey;
+      saveLocalState();
+      renderAll();
+      checkOnboardingNeeded();
+    }
+
+    function applyTheme() {
+      if (state.darkMode) {
+        document.documentElement.classList.add('dark');
+        document.getElementById('theme-icon').textContent = '☀️';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('theme-icon').textContent = '🌙';
+      }
+    }
+
+    function toggleDarkMode() {
+      state.darkMode = !state.darkMode;
+      applyTheme();
+      saveLocalState();
+    }
+
+    function ensureDayObj(profKey, dateStr) {
+      if (!state.profiles[profKey].days[dateStr]) {
+        state.profiles[profKey].days[dateStr] = {
+          water: 0,
+          meals: [],
+          exercises: []
+        };
+      }
+      return state.profiles[profKey].days[dateStr];
+    }
+
+    function changeDate(offset) {
+      const parts = state.currentDate.split('-').map(Number);
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      d.setDate(d.getDate() + offset);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      state.currentDate = `${y}-${m}-${day}`;
+      renderAll();
+    }
+
+    function goToToday() {
+      state.currentDate = getTodayStr();
+      renderAll();
+    }
+
+    function switchTab(tab) {
+      ['dashboard', 'analytics', 'profile'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tab) {
+          btn.className = `py-2 rounded-xl text-sm font-bold transition text-white ${state.activeProfile === 'hootan' ? 'bg-indigo-600' : 'bg-rose-600'}`;
+        } else {
+          btn.className = 'py-2 rounded-xl text-sm font-bold transition text-slate-600 dark:text-slate-300';
+        }
+      });
+      if (tab === 'analytics') renderCharts();
+    }
+
+    function calculateStreak(prof) {
+      let streak = 0;
+      const todayParts = getTodayStr().split('-').map(Number);
+      let d = new Date(todayParts[0], todayParts[1] - 1, todayParts[2]);
+
+      for (let i = 0; i < 365; i++) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const ds = `${y}-${m}-${day}`;
+        const dayObj = prof.days[ds];
+        if (dayObj && dayObj.meals && dayObj.meals.length > 0) {
+          streak++;
+        } else if (i > 0) {
+          break;
+        }
+        d.setDate(d.getDate() - 1);
+      }
+      return streak;
+    }
+
+    function renderAll() {
+      const isHootan = state.activeProfile === 'hootan';
+      const prof = state.profiles[state.activeProfile];
+      const dayData = ensureDayObj(state.activeProfile, state.currentDate);
+
+      const header = document.getElementById('app-header');
+      const metaTheme = document.getElementById('meta-theme-color');
+      if (isHootan) {
+        header.className = 'sticky top-0 z-30 bg-gradient-to-l from-indigo-600 to-violet-600 text-white shadow-lg transition-all duration-500';
+        metaTheme.setAttribute('content', '#4f46e5');
+        document.getElementById('btn-prof-hootan').className = 'px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 bg-white text-indigo-700 shadow-sm';
+        document.getElementById('btn-prof-fatemeh').className = 'px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 text-white/80 hover:text-white';
+        document.getElementById('spouse-name-label').textContent = 'فاطمه';
+      } else {
+        header.className = 'sticky top-0 z-30 bg-gradient-to-l from-rose-500 to-pink-600 text-white shadow-lg transition-all duration-500';
+        metaTheme.setAttribute('content', '#e11d48');
+        document.getElementById('btn-prof-fatemeh').className = 'px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 bg-white text-rose-600 shadow-sm';
+        document.getElementById('btn-prof-hootan').className = 'px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all flex items-center gap-1.5 text-white/80 hover:text-white';
+        document.getElementById('spouse-name-label').textContent = 'هوتن';
+      }
+
+      document.getElementById('streak-count').textContent = calculateStreak(prof);
+
+      const parts = state.currentDate.split('-').map(Number);
+      const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+      const faDate = new Intl.DateTimeFormat('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' }).format(dateObj);
+      const isToday = state.currentDate === getTodayStr();
+      document.getElementById('current-date-label').textContent = isToday ? `امروز (${faDate})` : faDate;
+      document.getElementById('btn-today').classList.toggle('hidden', isToday);
+
+      let eatenCal = 0, totP = 0, totC = 0, totF = 0, totFiber = 0, totSugar = 0, totSodium = 0;
+      dayData.meals.forEach(m => {
+        eatenCal += Number(m.calories || 0);
+        totP += Number(m.protein || 0);
+        totC += Number(m.carbs || 0);
+        totF += Number(m.fat || 0);
+        totFiber += Number(m.fiber || 0);
+        totSugar += Number(m.sugar || 0);
+        totSodium += Number(m.sodium || 0);
+      });
+
+      let burnedCal = 0;
+      dayData.exercises.forEach(ex => {
+        burnedCal += Number(ex.caloriesBurned || 0);
+      });
+
+      const netCal = eatenCal - burnedCal;
+      const targetCal = prof.targets.calories || 2000;
+      const remCal = targetCal - netCal;
+
+      document.getElementById('cal-target').textContent = Math.round(targetCal);
+      document.getElementById('cal-eaten').textContent = Math.round(eatenCal);
+      document.getElementById('cal-burned').textContent = Math.round(burnedCal);
+      document.getElementById('cal-net').textContent = Math.round(netCal);
+      document.getElementById('cal-remaining').textContent = Math.round(remCal);
+
+      const circumference = 251.2;
+      const pct = Math.min(Math.max(netCal / targetCal, 0), 1);
+      const ring = document.getElementById('cal-ring-progress');
+      ring.style.strokeDashoffset = circumference - (pct * circumference);
+      ring.setAttribute('class', netCal > targetCal
+        ? 'text-rose-500 transition-all duration-700'
+        : (isHootan ? 'text-indigo-600 transition-all duration-700' : 'text-rose-500 transition-all duration-700')
+      );
+
+      updateMacroBar('p', totP, prof.targets.protein);
+      updateMacroBar('c', totC, prof.targets.carbs);
+      updateMacroBar('f', totF, prof.targets.fat);
+
+      document.getElementById('micro-fiber').textContent = Math.round(totFiber);
+      document.getElementById('micro-fiber-max').textContent = prof.targets.fiber || 28;
+      document.getElementById('micro-sugar').textContent = Math.round(totSugar);
+      document.getElementById('micro-sodium').textContent = Math.round(totSodium);
+
+      document.getElementById('sodium-warning').classList.toggle('hidden', totSodium < 2300);
+
+      renderRoutines(prof);
+      renderWater(dayData.water, prof.targets.water || 8);
+      renderExercises(dayData.exercises, burnedCal);
+      renderMealsList(dayData.meals);
+      renderWeightProfile(prof);
+    }
+
+    function updateMacroBar(key, val, max) {
+      document.getElementById(`macro-${key}-val`).textContent = Math.round(val);
+      document.getElementById(`macro-${key}-max`).textContent = Math.round(max);
+      const pct = Math.min(100, Math.round((val / (max || 1)) * 100));
+      document.getElementById(`macro-${key}-bar`).style.width = `${pct}%`;
+    }
+
+    function selectMealCat(cat) {
+      selectedMealCat = cat;
+      ['صبحانه', 'ناهار', 'شام', 'میان‌وعده'].forEach(c => {
+        const btn = document.getElementById(`cat-${c}`);
+        if (c === cat) {
+          btn.className = `meal-cat-btn py-2 rounded-xl border font-bold transition text-white ${state.activeProfile === 'hootan' ? 'border-indigo-600 bg-indigo-600' : 'border-rose-500 bg-rose-500'}`;
+        } else {
+          btn.className = 'meal-cat-btn py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 transition';
+        }
+      });
+    }
+
+    function toggleSharedMultiplier() {
+      const checked = document.getElementById('chk-shared-meal').checked;
+      document.getElementById('shared-multiplier').classList.toggle('hidden', !checked);
+    }
+
+    function handlePhotoSelected(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 900;
+          const scale = Math.min(1, MAX_WIDTH / img.width);
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          selectedPhotoBase64 = dataUrl.split(',')[1];
+          selectedPhotoMime = 'image/jpeg';
+          document.getElementById('photo-preview-img').src = dataUrl;
+          document.getElementById('photo-preview-box').classList.remove('hidden');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearSelectedPhoto() {
+      selectedPhotoBase64 = null;
+      selectedPhotoMime = null;
+      document.getElementById('food-photo-input').value = '';
+      document.getElementById('photo-preview-box').classList.add('hidden');
+    }
+
+    async function analyzeAndLogFood() {
+      const text = document.getElementById('ai-food-input').value.trim();
+      if (!text && !selectedPhotoBase64) {
+        showToast('⚠️ لطفاً توضیح غذا را بنویسید یا یک عکس انتخاب کنید.');
+        return;
+      }
+
+      if (!state.config.geminiKey) {
+        showToast('🔑 ابتدا کلید رایگان Gemini API را در بخش تنظیمات (⚙️) وارد کنید.');
+        openModal('modal-settings');
+        return;
+      }
+
+      const btn = document.getElementById('btn-ai-submit');
+      const oldHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span>در حال تحلیل هوشمند...</span><span class="animate-spin">⏳</span>';
+
+      try {
+        const systemPrompt = `تو یک متخصص تغذیه دقیق مسلط به غذاها و پیمانه‌های ایرانی (قاشق، کف دست، قوطی کبریت، پیاله و...) هستی.
+ورودی کاربر (متن یا تصویر غذا/جدول ارزش غذایی) را تحلیل کن و خروجی را فقط به صورت یک JSON معتبر با ساختار زیر برگردان:
+{
+  "title": "نام خلاصه و تمیز غذا و مقدار آن به فارسی",
+  "calories": عدد کالری کل,
+  "protein": عدد پروتئین به گرم,
+  "carbs": عدد کربوهیدرات به گرم,
+  "fat": عدد چربی به گرم,
+  "fiber": عدد فیبر به گرم,
+  "sugar": عدد قند ساده به گرم,
+  "sodium": عدد سدیم به میلی‌گرم,
+  "score": امتیاز کیفیت تغذیه‌ای وعده از 1 تا 10,
+  "tip": "یک نکته تغذیه‌ای کوتاه و دوستانه یک‌خطی درباره این وعده"
+}`;
+
+        const parts = [{ text: systemPrompt + '\n\nورودی کاربر: ' + (text || 'تحلیل تصویر پیوست‌شده') }];
+        if (selectedPhotoBase64) {
+          parts.push({
+            inline_data: {
+              mime_type: selectedPhotoMime,
+              data: selectedPhotoBase64
+            }
+          });
+        }
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${state.config.geminiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: { responseMimeType: 'application/json' }
+          })
+        });
+
+        if (!res.ok) throw new Error('خطا در ارتباط با Gemini API');
+        const data = await res.json();
+        const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const parsed = JSON.parse(rawJson);
+
+        const nowTime = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+        const mealItem = {
+          id: 'm_' + Date.now(),
+          time: nowTime,
+          category: selectedMealCat,
+          title: parsed.title || text || 'وعده تصویری',
+          calories: Math.round(Number(parsed.calories) || 0),
+          protein: Math.round((Number(parsed.protein) || 0) * 10) / 10,
+          carbs: Math.round((Number(parsed.carbs) || 0) * 10) / 10,
+          fat: Math.round((Number(parsed.fat) || 0) * 10) / 10,
+          fiber: Math.round((Number(parsed.fiber) || 0) * 10) / 10,
+          sugar: Math.round((Number(parsed.sugar) || 0) * 10) / 10,
+          sodium: Math.round(Number(parsed.sodium) || 0),
+          score: Number(parsed.score) || 8,
+          tip: parsed.tip || ''
+        };
+
+        const dayObj = ensureDayObj(state.activeProfile, state.currentDate);
+        dayObj.meals.unshift(mealItem);
+
+        if (document.getElementById('chk-save-routine').checked) {
+          state.profiles[state.activeProfile].routines.unshift({
+            title: mealItem.title,
+            calories: mealItem.calories,
+            protein: mealItem.protein,
+            carbs: mealItem.carbs,
+            fat: mealItem.fat,
+            fiber: mealItem.fiber,
+            sugar: mealItem.sugar,
+            sodium: mealItem.sodium
+          });
+          document.getElementById('chk-save-routine').checked = false;
+        }
+
+        const sharedChecked = document.getElementById('chk-shared-meal').checked;
+        let syncedBoth = false;
+        if (sharedChecked) {
+          const mult = parseFloat(document.getElementById('shared-multiplier').value) || 1;
+          const spouseKey = state.activeProfile === 'hootan' ? 'fatemeh' : 'hootan';
+          const spouseDay = ensureDayObj(spouseKey, state.currentDate);
+          spouseDay.meals.unshift({
+            ...mealItem,
+            id: 'm_' + (Date.now() + 1),
+            title: `${mealItem.title} (${Math.round(mult * 100)}٪)`,
+            calories: Math.round(mealItem.calories * mult),
+            protein: Math.round(mealItem.protein * mult * 10) / 10,
+            carbs: Math.round(mealItem.carbs * mult * 10) / 10,
+            fat: Math.round(mealItem.fat * mult * 10) / 10,
+            fiber: Math.round(mealItem.fiber * mult * 10) / 10,
+            sugar: Math.round(mealItem.sugar * mult * 10) / 10,
+            sodium: Math.round(mealItem.sodium * mult)
+          });
+          document.getElementById('chk-shared-meal').checked = false;
+          toggleSharedMultiplier();
+          syncedBoth = true;
+        }
+
+        document.getElementById('ai-food-input').value = '';
+        clearSelectedPhoto();
+        saveLocalState();
+        renderAll();
+        showToast(syncedBoth ? '✅ برای هر دو نفر با موفقیت ثبت شد!' : '✅ وعده با موفقیت تحلیل و ثبت شد!');
+        if (state.config.githubToken && state.config.gistId) {
+          syncWithGitHub(true, syncedBoth);
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('❌ خطا در تحلیل هوشمند. کلید API یا اینترنت را بررسی کنید.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
+      }
+    }
+
+    function renderRoutines(prof) {
+      const container = document.getElementById('routines-container');
+      container.innerHTML = '';
+      (prof.routines || []).forEach((r, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'shrink-0 flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/70 hover:bg-indigo-50 dark:hover:bg-slate-600 px-3 py-1.5 rounded-xl text-xs cursor-pointer transition border border-slate-200/60 dark:border-slate-600';
+        chip.innerHTML = `
+          <span onclick="quickLogRoutine(${idx})" class="font-bold">${r.title} <span class="text-slate-400 font-normal">(${r.calories} kcal)</span></span>
+          <button onclick="removeRoutine(${idx})" class="text-slate-400 hover:text-rose-500 pr-1">✕</button>
+        `;
+        container.appendChild(chip);
+      });
+    }
+
+    function quickLogRoutine(idx) {
+      const prof = state.profiles[state.activeProfile];
+      const r = prof.routines[idx];
+      if (!r) return;
+      const dayObj = ensureDayObj(state.activeProfile, state.currentDate);
+      const nowTime = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+      dayObj.meals.unshift({
+        id: 'm_' + Date.now(),
+        time: nowTime,
+        category: selectedMealCat,
+        title: r.title,
+        calories: r.calories,
+        protein: r.protein,
+        carbs: r.carbs,
+        fat: r.fat,
+        fiber: r.fiber || 0,
+        sugar: r.sugar || 0,
+        sodium: r.sodium || 0,
+        score: 8,
+        tip: 'ثبت سریع از لیست روتین‌های من ⚡'
+      });
+      saveLocalState();
+      renderAll();
+      showToast(`⚡ «${r.title}» در وعده ${selectedMealCat} ثبت شد!`);
+      if (state.config.githubToken && state.config.gistId) syncWithGitHub(true);
+    }
+
+    function removeRoutine(idx) {
+      state.profiles[state.activeProfile].routines.splice(idx, 1);
+      saveLocalState();
+      renderAll();
+    }
+
+    function renderMealsList(meals) {
+      const container = document.getElementById('meals-list-container');
+      document.getElementById('meals-count-badge').textContent = `${meals.length} مورد`;
+
+      if (meals.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-slate-400 text-xs">
+            هنوز وعده‌ای برای این روز ثبت نشده است. اولین وعده را در کادر بالا بنویسید! 🍽️
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = meals.map(m => `
+        <div class="bg-slate-50 dark:bg-slate-700/30 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-700 space-y-2">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">${m.category}</span>
+                <span class="font-extrabold text-sm">${m.title}</span>
+                <span class="text-[10px] text-slate-400">${m.time || ''}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <span class="font-extrabold text-sm text-emerald-600 dark:text-emerald-400 ml-1">${m.calories} <span class="text-[10px] font-normal">kcal</span></span>
+              <button onclick="openEditMealModal('${m.id}')" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 text-xs" title="ویرایش">✏️</button>
+              <button onclick="deleteMeal('${m.id}')" class="p-1.5 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/40 text-xs text-rose-500" title="حذف">🗑️</button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+            <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-600">🥩 پروتئین: <b>${m.protein}g</b></span>
+            <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-600">🍞 کربوهیدرات: <b>${m.carbs}g</b></span>
+            <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-600">🥑 چربی: <b>${m.fat}g</b></span>
+            <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-600">🥦 فیبر: <b>${m.fiber || 0}g</b></span>
+            <span class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200/60 dark:border-slate-600">🧂 سدیم: <b>${m.sodium || 0}mg</b></span>
+          </div>
+
+          ${m.tip ? `
+          <div class="flex items-center justify-between text-[11px] bg-white/80 dark:bg-slate-800/70 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-700">
+            <span class="text-slate-500 dark:text-slate-300">💡 ${m.tip}</span>
+            <span class="font-bold text-amber-600 dark:text-amber-400 shrink-0 mr-2">امتیاز: ${m.score || 8}/10</span>
+          </div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function deleteMeal(id) {
+      const dayObj = ensureDayObj(state.activeProfile, state.currentDate);
+      dayObj.meals = dayObj.meals.filter(m => m.id !== id);
+      saveLocalState();
+      renderAll();
+      showToast('🗑️ وعده حذف شد.');
+      if (state.config.githubToken && state.config.gistId) syncWithGitHub(true);
+    }
+
+    function openManualMealModal() {
+      document.getElementById('meal-modal-title').textContent = '✍️ ثبت دستی وعده غذایی';
+      document.getElementById('edit-meal-id').value = '';
+      document.getElementById('edit-meal-name').value = '';
+      document.getElementById('edit-meal-cat').value = selectedMealCat;
+      document.getElementById('edit-meal-cal').value = '';
+      document.getElementById('edit-meal-p').value = '';
+      document.getElementById('edit-meal-c').value = '';
+      document.getElementById('edit-meal-f').value = '';
+      document.getElementById('edit-meal-fiber').value = '0';
+      document.getElementById('edit-meal-sugar').value = '0';
+      document.getElementById('edit-meal-sodium').value = '0';
+      openModal('modal-meal-edit');
+    }
+
+    function openEditMealModal(id) {
+      const dayObj = ensureDayObj(state.activeProfile, state.currentDate);
+      const m = dayObj.meals.find(x => x.id === id);
+      if (!m) return;
+      document.getElementById('meal-modal-title').textContent = '✏️ ویرایش وعده غذایی';
+      document.getElementById('edit-meal-id').value = m.id;
+      document.getElementById('edit-meal-name').value = m.title;
+      document.getElementById('edit-meal-cat').value = m.category;
+      document.getElementById('edit-meal-cal').value = m.calories;
+      document.getElementById('edit-meal-p').value = m.protein;
+      document.getElementById('edit-meal-c').value = m.carbs;
+      document.getElementById('edit-meal-f').value = m.fat;
+      document.getElementById('edit-meal-fiber').value = m.fiber || 0;
+      document.getElementById('edit-meal-sugar').value = m.sugar || 0;
+      document.getElementById('edit-meal-sodium').value = m.sodium || 0;
+      openModal('modal-meal-edit');
+    }
+
+    function saveEditedMeal() {
+      const id = document.getElementById('edit-meal-id').value;
+      const dayObj = ensureDayObj(state.activeProfile, state.currentDate);
+      const itemData = {
+        title: document.getElementById('edit-meal-name').value.trim() || 'وعده غذایی',
+        category: document.getElementById('edit-meal-cat').value,
+        calories: Number(document.getElementById('edit-meal-cal').value) || 0,
+        protein: Number(document.getElementById('edit-meal-p').value) || 0,
+        carbs: Number(document.getElementById('edit-meal-c').value) || 0,
+        fat: Number(document.getElementById('edit-meal-f').value) || 0,
+        fiber: Number(document.getElementById('edit-meal-fiber').value) || 0,
+        sugar: Number(document.getElementById('edit-meal-sugar').value) || 0,
+        sodium: Number(document.getElementById('edit-meal-sodium').value) || 0
+      };
+
+      if (id) {
+        const idx = dayObj.meals.findIndex(x => x.id === id);
+        if (idx > -1) dayObj.meals[idx] = { ...dayObj.meals[idx], ...itemData };
+      } else {
+        dayObj.meals.unshift({
+          id: 'm_' + Date.now(),
+          time: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+          score: 8,
+          tip: 'ثبت دستی ✍️',
+          ...itemData
+        });
+      }
+
+      closeModal('modal-meal-edit');
+      saveLocalState();
+      renderAll();
+      if (state.config.githubToken && state.config.gistId) syncWithGitHub(true);
+    }
+
+    function renderWater(count, target) {
+      document.getElementById('water-count').textContent = count;
+      document.getElementById('water-target-count').textContent = target;
+      document.getElementById('water-liters').textContent = (count * 0.25).toFixed(2);
+      const wrap = document.getElementById('water-glasses-visual');
+      const total = Math.max(target, count, 8);
+      let html = '';
+      for (let i = 0; i < total; i++) {
+        const filled = i < count;
+        html += `<button onclick="setWaterDirect(${i + 1})" class="text-lg transition transform hover:scale-110 ${filled ? 'opacity-100' : 'opacity-25 grayscale'}">🥛</button>`;
+      }
+      wrap.innerHTML = html;
+    }
+
+    function changeWater(delta) {
+      const dayObj = ensureDayObj(state.activeProfile, state.currentDate);
+      dayObj.water = Math.max(0, (dayObj.water || 0) + delta);
+      saveLocalState();
+      renderAll();
+      if (state.config.githubToken && state.config.gistId) syncWithGitHub(true);
+    }
+
+    function setWaterDirect(val) {
+      const dayObj = ensureDayObj(state.activeProfile, state.currentDate);
+      dayObj.water = dayObj.water === val ? val - 1 : val;
+      saveLocalState();
+      renderAll();
+      if (state.config.githubToken && state.config.gistId) syncWithGitHub(true);
+    }
+
+    function renderExercises(list, totalBurned) {
+      document.getElementById('exercise-total-cal').textContent = Math.round(totalBurned);
+      const container = document.getElementById('exercise-list');
+      if (!list || list.length === 0) {
+        container.innerHTML = `<div class="text-slate-400 text-[11px] pt-1">هنوز ورزشی برای امروز ثبت نشده است.</div>`;
+        return;
+      }
+      container.innerHTML = list.map(ex => `
+        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/40 px-2.5 py-1.5 rounded-xl">
+          <span class="font-bold">${ex.title}</span>
+          <div class="flex items-center gap-2">
+            <span class="text-orange-500 font-bold">-${ex.caloriesBurned} kcal</span>
+            <button onclick="deleteExercise('${ex.id}')" class="text-rose-500">✕</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function addExercise() {
+      const title = document.getElementById('ex-title-input').value.trim();
+      let cal = Number(document.getElementById('ex-cal-input').value);
+      if (!title) {
+        showToast('⚠️ لطفاً نام یا مدت ورزش را بنویسید.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-save-exercise');
+      btn.disabled = true;
+
+      if (!cal && state.config.geminiKey) {
+        try {
+          const w = state.profiles[state.activeProfile].stats.weight || 70;
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${state.config.geminiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `فردی با وزن ${w} کیلوگرم این فعالیت را انجام داده: «${title}». فقط یک JSON برگردان: {"calories": عدد کالری سوزانده شده}` }] }],
+              generationConfig: { responseMimeType: 'application/json' }
+            })
+          });
+          const data = await res.json();
+          const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
+          cal = Math.round(Number(parsed.calories) || 150);
+        } catch (e) {
+          cal = 150;
+        }
+      } else if (!cal) {
+        cal = 150;
+      }
+
+      const dayObj = ensureDayObj(state.activeProfile, state.currentDate);
+      dayObj.exercises.push({ id: 'ex_' + Date.now(), title, caloriesBurned: cal });
+      document.getElementById('ex-title-input').value = '';
+      document.getElementById('ex-cal-input').value = '';
+      btn.disabled = false;
+      closeModal('modal-exercise');
+      saveLocalState();
+      renderAll();
+      showToast(`🔥 ${cal} کالری ورزش ثبت شد!`);
+      if (state.config.githubToken && state.config.gistId) syncWithGitHub(true);
+    }
+
+    function deleteExercise(id) {
+      const dayObj = ensureDayObj(state.activeProfile, state.currentDate);
+      dayObj.exercises = dayObj.exercises.filter(x => x.id !== id);
+      saveLocalState();
+      renderAll();
+    }
+
+    async function askWhatToEat() {
+      if (!state.config.geminiKey) {
+        showToast('🔑 ابتدا کلید Gemini API را در تنظیمات وارد کنید.');
+        openModal('modal-settings');
+        return;
+      }
+
+      const prof = state.profiles[state.activeProfile];
+      const dayData = ensureDayObj(state.activeProfile, state.currentDate);
+      let eatenCal = 0, totP = 0, totC = 0, totF = 0;
+      dayData.meals.forEach(m => {
+        eatenCal += Number(m.calories || 0);
+        totP += Number(m.protein || 0);
+        totC += Number(m.carbs || 0);
+        totF += Number(m.fat || 0);
+      });
+      let burned = 0;
+      dayData.exercises.forEach(e => burned += Number(e.caloriesBurned || 0));
+
+      const remCal = Math.max(0, prof.targets.calories - (eatenCal - burned));
+      const remP = Math.max(0, Math.round(prof.targets.protein - totP));
+      const remC = Math.max(0, Math.round(prof.targets.carbs - totC));
+      const remF = Math.max(0, Math.round(prof.targets.fat - totF));
+
+      openModal('modal-what-to-eat');
+      const box = document.getElementById('what-to-eat-content');
+      box.innerHTML = `<div class="text-center py-6 text-slate-400">در حال بررسی یخچال و محاسبه بهترین گزینه‌ها برای ${prof.name}... 🤖🍳</div>`;
+
+      try {
+        const prompt = `کاربر (${prof.name}) تا این لحظه از روز ${remCal} کالری، ${remP} گرم پروتئین، ${remC} گرم کربوهیدرات و ${remF} گرم چربی تا سقف هدف امروزش جا دارد.
+۳ پیشنهاد غذایی یا میان‌وعده بسیار کاربردی، خوشمزه و در دسترس در خانه ایرانی به او بده که کمک کند پروتئین و کالری باقی‌مانده‌اش را به بهترین شکل پر کند.
+خروجی را به صورت JSON زیر بده:
+{
+  "options": [
+    {"title": "نام پیشنهاد", "desc": "مواد لازم و دلیل انتخاب", "calories": عدد, "protein": عدد, "carbs": عدد, "fat": عدد}
+  ]
+}`;
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${state.config.geminiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: 'application/json' }
+          })
+        });
+        const data = await res.json();
+        const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
+
+        box.innerHTML = `
+          <div class="bg-indigo-50 dark:bg-indigo-950/50 p-3 rounded-2xl text-indigo-700 dark:text-indigo-300 font-bold">
+            🎯 سهمیه باقی‌مانده امروز: ${remCal} کالری | ${remP}g پروتئین
+          </div>
+          ${(parsed.options || []).map((o, i) => `
+            <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-700/40 border border-slate-200 dark:border-slate-700 space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="font-extrabold text-sm">${i + 1}. ${o.title}</span>
+                <span class="text-emerald-600 font-bold">${o.calories} kcal | ${o.protein}g پروتئین</span>
+              </div>
+              <p class="text-slate-500 dark:text-slate-300">${o.desc}</p>
+            </div>
+          `).join('')}
+        `;
+      } catch (e) {
+        box.innerHTML = `<div class="text-rose-500 text-center py-4">خطا در دریافت پیشنهادها.</div>`;
+      }
+    }
+
+    function openOnboardingWizard(allowCancel = true) {
+      const prof = state.profiles[state.activeProfile];
+      document.getElementById('wiz-emoji').textContent = state.activeProfile === 'hootan' ? '👨🏻✨' : '👩🏻✨';
+      document.getElementById('wiz-title').textContent = `سلام ${prof.name} عزیز! خوش اومدی`;
+      document.getElementById('wiz-gender').value = prof.gender;
+      document.getElementById('wiz-age').value = prof.stats.age || '';
+      document.getElementById('wiz-height').value = prof.stats.height || '';
+      document.getElementById('wiz-weight').value = prof.stats.weight || '';
+      document.getElementById('wiz-target-weight').value = prof.stats.targetWeight || '';
+      document.getElementById('wiz-activity').value = String(prof.stats.activity || 1.375);
+      document.getElementById('wiz-goal').value = prof.stats.goal || 'lose_mild';
+      document.getElementById('wiz-cancel-btn').classList.toggle('hidden', !allowCancel);
+      openModal('modal-onboarding');
+    }
+
+    function saveOnboardingWizard() {
+      const prof = state.profiles[state.activeProfile];
+      const gender = document.getElementById('wiz-gender').value;
+      const age = Number(document.getElementById('wiz-age').value) || 30;
+      const height = Number(document.getElementById('wiz-height').value) || 170;
+      const weight = Number(document.getElementById('wiz-weight').value) || 70;
+      const targetWeight = Number(document.getElementById('wiz-target-weight').value) || weight;
+      const activity = parseFloat(document.getElementById('wiz-activity').value) || 1.375;
+      const goal = document.getElementById('wiz-goal').value;
+
+      const bmr = (10 * weight) + (6.25 * height) - (5 * age) + (gender === 'male' ? 5 : -161);
+      const tdee = bmr * activity;
+
+      let targetCal = tdee;
+      let proteinPerKg = 1.6;
+      if (goal === 'lose_fast') { targetCal = tdee - 500; proteinPerKg = 1.8; }
+      else if (goal === 'lose_mild') { targetCal = tdee - 350; proteinPerKg = 1.7; }
+      else if (goal === 'recomp') { targetCal = tdee - 150; proteinPerKg = 2.0; }
+      else if (goal === 'gain') { targetCal = tdee + 300; proteinPerKg = 1.8; }
+
+      targetCal = Math.max(gender === 'male' ? 1400 : 1200, Math.round(targetCal));
+      const proteinG = Math.round(weight * proteinPerKg);
+      const fatG = Math.round((targetCal * 0.27) / 9);
+      const carbsG = Math.max(50, Math.round((targetCal - (proteinG * 4) - (fatG * 9)) / 4));
+      const waterGlasses = Math.max(6, Math.round((weight * 0.033) / 0.25));
+
+      prof.gender = gender;
+      prof.onboarded = true;
+      prof.stats = {
+        age,
+        height,
+        weight,
+        startWeight: prof.stats.startWeight || weight,
+        targetWeight,
+        activity,
+        goal
+      };
+      prof.targets = {
+        calories: targetCal,
+        protein: proteinG,
+        carbs: carbsG,
+        fat: fatG,
+        fiber: gender === 'male' ? 30 : 25,
+        sugar: 30,
+        sodium: 2300,
+        water: waterGlasses
+      };
+
+      if (!prof.weightHistory || prof.weightHistory.length === 0) {
+        prof.weightHistory = [{ date: getTodayStr(), weight }];
+      }
+
+      closeModal('modal-onboarding');
+      saveLocalState();
+      renderAll();
+      showToast(`🎯 برنامه اختصاصی ${prof.name} (${targetCal} کالری) تنظیم شد!`);
+      if (state.config.githubToken && state.config.gistId) syncWithGitHub(true);
+    }
+
+    function renderWeightProfile(prof) {
+      const { height, weight, startWeight, targetWeight } = prof.stats;
+      document.getElementById('weight-start').textContent = startWeight || weight;
+      document.getElementById('weight-current').textContent = weight;
+      document.getElementById('weight-target').textContent = targetWeight;
+
+      const hMeters = (height || 170) / 100;
+      const bmi = (weight / (hMeters * hMeters)).toFixed(1);
+      let bmiStatus = 'نرمال';
+      if (bmi < 18.5) bmiStatus = 'کم‌وزن';
+      else if (bmi >= 25 && bmi < 30) bmiStatus = 'اضافه‌وزن';
+      else if (bmi >= 30) bmiStatus = 'چاقی';
+      document.getElementById('bmi-badge').textContent = `BMI: ${bmi} (${bmiStatus})`;
+
+      const totalDiff = Math.abs((startWeight || weight) - targetWeight);
+      const doneDiff = Math.abs((startWeight || weight) - weight);
+      let pct = totalDiff > 0 ? Math.min(100, Math.round((doneDiff / totalDiff) * 100)) : 100;
+      document.getElementById('weight-progress-pct').textContent = `${pct}%`;
+      document.getElementById('weight-progress-bar').style.width = `${pct}%`;
+    }
+
+    function logNewWeight() {
+      const val = parseFloat(document.getElementById('new-weight-input').value);
+      if (!val || val < 30 || val > 250) {
+        showToast('⚠️ لطفاً وزن معتبر وارد کنید.');
+        return;
+      }
+      const prof = state.profiles[state.activeProfile];
+      prof.stats.weight = val;
+      prof.weightHistory.push({ date: state.currentDate, weight: val });
+      document.getElementById('new-weight-input').value = '';
+      saveLocalState();
+      renderAll();
+      showToast('⚖️ وزن جدید ثبت شد!');
+      if (state.config.githubToken && state.config.gistId) syncWithGitHub(true);
+    }
+
+    function renderCharts() {
+      const prof = state.profiles[state.activeProfile];
+      const labels = [];
+      const netCals = [];
+      const parts = state.currentDate.split('-').map(Number);
+      const baseD = new Date(parts[0], parts[1] - 1, parts[2]);
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(baseD);
+        d.setDate(d.getDate() - i);
+        const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const label = new Intl.DateTimeFormat('fa-IR', { weekday: 'short' }).format(d);
+        labels.push(label);
+        const dayObj = prof.days[ds];
+        let c = 0;
+        if (dayObj) {
+          dayObj.meals.forEach(m => c += Number(m.calories || 0));
+          dayObj.exercises.forEach(e => c -= Number(e.caloriesBurned || 0));
+        }
+        netCals.push(Math.max(0, c));
+      }
+
+      if (chartWeekly) chartWeekly.destroy();
+      chartWeekly = new Chart(document.getElementById('chart-weekly-calories'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'کالری خالص',
+            data: netCals,
+            backgroundColor: state.activeProfile === 'hootan' ? '#4f46e5' : '#e11d48',
+            borderRadius: 8
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      const todayObj = ensureDayObj(state.activeProfile, state.currentDate);
+      let p = 0, c = 0, f = 0;
+      todayObj.meals.forEach(m => {
+        p += Number(m.protein || 0);
+        c += Number(m.carbs || 0);
+        f += Number(m.fat || 0);
+      });
+      if (chartMacros) chartMacros.destroy();
+      chartMacros = new Chart(document.getElementById('chart-macros-pie'), {
+        type: 'doughnut',
+        data: {
+          labels: ['پروتئین (g)', 'کربوهیدرات (g)', 'چربی (g)'],
+          datasets: [{
+            data: (p + c + f) > 0 ? [p, c, f] : [1, 1, 1],
+            backgroundColor: ['#f43f5e', '#f59e0b', '#0ea5e9']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      const wh = prof.weightHistory.slice(-10);
+      if (chartWeight) chartWeight.destroy();
+      chartWeight = new Chart(document.getElementById('chart-weight-trend'), {
+        type: 'line',
+        data: {
+          labels: wh.map(x => x.date.slice(5)),
+          datasets: [{
+            label: 'وزن (kg)',
+            data: wh.map(x => x.weight),
+            borderColor: '#10b981',
+            tension: 0.3,
+            fill: false
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    function exportToCSV() {
+      const prof = state.profiles[state.activeProfile];
+      let rows = [['تاریخ', 'وعده', 'ساعت', 'عنوان غذا', 'کالری', 'پروتئین (g)', 'کربوهیدرات (g)', 'چربی (g)', 'فیبر (g)', 'قند (g)', 'سدیم (mg)', 'امتیاز']];
+      Object.keys(prof.days).sort().reverse().forEach(date => {
+        prof.days[date].meals.forEach(m => {
+          rows.push([
+            date,
+            m.category,
+            m.time || '',
+            `"${(m.title || '').replace(/"/g, '""')}"`,
+            m.calories,
+            m.protein,
+            m.carbs,
+            m.fat,
+            m.fiber || 0,
+            m.sugar || 0,
+            m.sodium || 0,
+            m.score || ''
+          ]);
+        });
+      });
+
+      const csvContent = '\uFEFF' + rows.map(r => r.join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nutrition_${state.activeProfile}_${getTodayStr()}.csv`;
+      a.click();
+      showToast('📥 فایل اکسل (CSV) دانلود شد!');
+    }
+
+    async function createNewGistDatabase() {
+      const token = document.getElementById('cfg-github-token').value.trim();
+      if (!token) {
+        showToast('⚠️ ابتدا توکن گیت‌هاب را در کادر بالا وارد کنید.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-create-gist');
+      btn.disabled = true;
+      btn.textContent = 'در حال ساخت...';
+
+      try {
+        const res = await fetch('https://api.github.com/gists', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            description: 'Hootan & Fatemeh Smart Nutrition Tracker DB',
+            public: false,
+            files: {
+              'nutrition_hootan.json': { content: JSON.stringify(state.profiles.hootan, null, 2) },
+              'nutrition_fatemeh.json': { content: JSON.stringify(state.profiles.fatemeh, null, 2) }
+            }
+          })
+        });
+
+        if (!res.ok) throw new Error('GitHub token error');
+        const data = await res.json();
+        document.getElementById('cfg-gist-id').value = data.id;
+        state.config.githubToken = token;
+        state.config.gistId = data.id;
+        saveLocalState();
+        showToast('🎉 دیتابیس خصوصی گیت‌هاب با موفقیت ساخته شد!');
+      } catch (e) {
+        showToast('❌ خطا در ساخت Gist. مطمئن شوید تیک دسترسی gist را برای توکن زده‌اید.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'ساخت خودکار ✨';
+      }
+    }
+
+    async function syncWithGitHub(isPush = false, pushBothProfiles = false) {
+      const { githubToken, gistId } = state.config;
+      if (!githubToken || !gistId) {
+        if (!isPush) openModal('modal-settings');
+        return;
+      }
+
+      const icon = document.getElementById('sync-icon');
+      icon.textContent = '🔄';
+
+      try {
+        if (isPush) {
+          const filesPayload = {};
+          if (pushBothProfiles) {
+            filesPayload['nutrition_hootan.json'] = { content: JSON.stringify(state.profiles.hootan) };
+            filesPayload['nutrition_fatemeh.json'] = { content: JSON.stringify(state.profiles.fatemeh) };
+          } else {
+            const activeFile = state.activeProfile === 'hootan' ? 'nutrition_hootan.json' : 'nutrition_fatemeh.json';
+            filesPayload[activeFile] = { content: JSON.stringify(state.profiles[state.activeProfile]) };
+          }
+
+          await fetch(`https://api.github.com/gists/${gistId}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${githubToken}`,
+              'Accept': 'application/vnd.github+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ files: filesPayload })
+          });
+        } else {
+          const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+            headers: {
+              'Authorization': `Bearer ${githubToken}`,
+              'Accept': 'application/vnd.github+json'
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.files['nutrition_hootan.json']?.content) {
+              state.profiles.hootan = JSON.parse(data.files['nutrition_hootan.json'].content);
+            }
+            if (data.files['nutrition_fatemeh.json']?.content) {
+              state.profiles.fatemeh = JSON.parse(data.files['nutrition_fatemeh.json'].content);
+            }
+            saveLocalState();
+            renderAll();
+            checkOnboardingNeeded();
+          }
+        }
+        icon.textContent = '✅';
+        setTimeout(() => icon.textContent = '☁️', 2500);
+      } catch (e) {
+        console.error(e);
+        icon.textContent = '⚠️';
+      }
+    }
+
+    function saveSettings() {
+      state.config.geminiKey = document.getElementById('cfg-gemini-key').value.trim();
+      state.config.githubToken = document.getElementById('cfg-github-token').value.trim();
+      state.config.gistId = document.getElementById('cfg-gist-id').value.trim();
+      saveLocalState();
+      closeModal('modal-settings');
+      showToast('✅ تنظیمات ذخیره شد!');
+      if (state.config.githubToken && state.config.gistId) {
+        syncWithGitHub(true, true);
+      }
+    }
+
+    function copyPartnerMagicLink() {
+      const geminiKey = document.getElementById('cfg-gemini-key').value.trim() || state.config.geminiKey;
+      const githubToken = document.getElementById('cfg-github-token').value.trim() || state.config.githubToken;
+      const gistId = document.getElementById('cfg-gist-id').value.trim() || state.config.gistId;
+
+      if (!geminiKey) {
+        showToast('⚠️ ابتدا کلید هوش مصنوعی را وارد کنید.');
+        return;
+      }
+
+      const payload = btoa(JSON.stringify({
+        geminiKey,
+        githubToken,
+        gistId,
+        profile: 'fatemeh'
+      }));
+
+      const baseUrl = window.location.origin + window.location.pathname;
+      const magicUrl = `${baseUrl}#magic=${payload}`;
+      navigator.clipboard.writeText(magicUrl);
+      showToast('🎁 لینک اختصاصی فاطمه کپی شد! در تلگرام یا واتساپ برایش بفرستید.');
+    }
+
+    function openModal(id) {
+      if (id === 'modal-settings') {
+        document.getElementById('cfg-gemini-key').value = state.config.geminiKey || '';
+        document.getElementById('cfg-github-token').value = state.config.githubToken || '';
+        document.getElementById('cfg-gist-id').value = state.config.gistId || '';
+      }
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', loadLocalState);
+  </script>
+</body>
+</html>

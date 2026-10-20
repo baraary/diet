@@ -1069,7 +1069,7 @@
           })
         });
 
-        if (!res.ok) throw new Error(await res.text()));
+        if (!res.ok) throw new Error(await res.text());
         const data = await res.json();
         const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
         const parsed = JSON.parse(rawJson);

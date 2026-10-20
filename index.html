@@ -1141,7 +1141,7 @@
         }
       } catch (err) {
         console.error(err);
-        showToast('❌ خطا در تحلیل هوشمند. کلید API یا اینترنت را بررسی کنید.');
+        showToast('❌ خطا: ' + (err.message || err));
       } finally {
         btn.disabled = false;
         btn.innerHTML = oldHtml;

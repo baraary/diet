@@ -40,13 +40,6 @@
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
-    @keyframes pulse-soft {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.03); }
-    }
-    .animate-pulse-soft {
-      animation: pulse-soft 2.5s infinite ease-in-out;
-    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen pb-24 transition-colors duration-300">
@@ -396,7 +389,6 @@
 
     <!-- ==================== تب ۳: وزن، BMI و اهداف ==================== -->
     <section id="tab-profile" class="hidden space-y-5">
-      <!-- کارت وضعیت وزن و BMI -->
       <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700 space-y-4">
         <div class="flex items-center justify-between">
           <div>
@@ -421,7 +413,6 @@
           </div>
         </div>
 
-        <!-- نوار پیشرفت تا وزن هدف -->
         <div>
           <div class="flex justify-between text-xs mb-1">
             <span class="text-slate-500">میزان پیشرفت تا وزن هدف:</span>
@@ -432,7 +423,6 @@
           </div>
         </div>
 
-        <!-- ثبت وزن جدید -->
         <div class="flex items-center gap-2 pt-2">
           <input type="number" step="0.1" id="new-weight-input" placeholder="وزن جدید (مثلاً 74.5)" class="flex-1 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3.5 py-2.5 text-sm" />
           <button onclick="logNewWeight()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-3 rounded-xl transition">
@@ -441,7 +431,6 @@
         </div>
       </div>
 
-      <!-- کارت مشخصات و بازمحاسبه هوشمند -->
       <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200/70 dark:border-slate-700 flex items-center justify-between">
         <div>
           <h3 class="font-extrabold text-sm">🎯 ویرایش مشخصات و اهداف روزانه</h3>
@@ -533,9 +522,7 @@
         </h3>
         <button onclick="closeModal('modal-what-to-eat')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
       </div>
-      <div id="what-to-eat-content" class="text-xs leading-relaxed space-y-3 max-h-[65vh] overflow-y-auto">
-        <!-- پیشنهادهای هوش مصنوعی -->
-      </div>
+      <div id="what-to-eat-content" class="text-xs leading-relaxed space-y-3 max-h-[65vh] overflow-y-auto"></div>
     </div>
   </div>
 
@@ -631,11 +618,25 @@
       </div>
 
       <div class="space-y-3 text-xs">
-        <!-- کلید جمینای -->
-        <div class="bg-slate-50 dark:bg-slate-700/40 p-3.5 rounded-2xl space-y-1.5 border border-slate-200/70 dark:border-slate-700">
+        <!-- کلید جمینای و انتخاب هوشمند مدل -->
+        <div class="bg-slate-50 dark:bg-slate-700/40 p-3.5 rounded-2xl space-y-2 border border-slate-200/70 dark:border-slate-700">
           <label class="block font-bold text-slate-700 dark:text-slate-200">🔑 کلید هوش مصنوعی (Gemini API Key)</label>
-          <input type="password" id="cfg-gemini-key" placeholder="AIzaSy..." dir="ltr" class="w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-mono text-xs" />
-          <p class="text-[11px] text-slate-400">از سایت <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-500 underline">Google AI Studio</a> به صورت رایگان دریافت کنید.</p>
+          <input type="text" id="cfg-gemini-key" placeholder="AIzaSy..." dir="ltr" class="w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-mono text-xs" />
+          
+          <div class="pt-1">
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-bold text-slate-700 dark:text-slate-200">🤖 مدل هوش مصنوعی</label>
+              <button type="button" onclick="fetchAvailableModelsUI()" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold hover:underline">🔄 استعلام مدل‌های فعال اکانت</button>
+            </div>
+            <select id="cfg-gemini-model" dir="ltr" class="w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2.5 font-mono text-xs">
+              <option value="auto">✨ Auto (انتخاب خودکار + جایگزینی ضدخطای 503)</option>
+              <option value="models/gemini-3.0-flash">models/gemini-3.0-flash</option>
+              <option value="models/gemini-2.5-pro">models/gemini-2.5-pro</option>
+              <option value="models/gemini-2.5-flash">models/gemini-2.5-flash</option>
+              <option value="models/gemini-2.0-flash">models/gemini-2.0-flash</option>
+            </select>
+          </div>
+          <p class="text-[11px] text-slate-400">در حالت <b>Auto</b>، برنامه به صورت خودکار لیست مدل‌های مجاز کلید شما را از گوگل می‌گیرد و اگر مدلی شلوغ (503) بود، خودکار مدل جایگزین را صدا می‌زند.</p>
         </div>
 
         <!-- همگام‌سازی گیت‌هاب -->
@@ -650,7 +651,6 @@
               ساخت خودکار ✨
             </button>
           </div>
-          <p class="text-[11px] text-slate-400">با زدن «ساخت خودکار»، دیتابیس دو نفره شما در گیت‌هاب ساخته می‌شود.</p>
         </div>
 
         <!-- دکمه طلایی اشتراک‌گذاری با فاطمه -->
@@ -670,7 +670,7 @@
   </div>
 
   <!-- اعلان (Toast) -->
-  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2">
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 max-w-[90vw] text-center">
     <span id="toast-text"></span>
   </div>
 
@@ -683,6 +683,7 @@
     let chartWeekly = null;
     let chartMacros = null;
     let chartWeight = null;
+    let cachedValidModels = null;
 
     const DEFAULT_ROUTINES = [
       { title: '۲ عدد تخم‌مرغ آب‌پز', calories: 155, protein: 12.6, carbs: 1.1, fat: 10.6, fiber: 0, sugar: 1, sodium: 124 },
@@ -711,6 +712,7 @@
       darkMode: false,
       config: {
         geminiKey: '',
+        geminiModel: 'auto',
         githubToken: '',
         gistId: ''
       },
@@ -728,7 +730,7 @@
       return `${y}-${m}-${day}`;
     }
 
-    function showToast(msg, duration = 3200) {
+    function showToast(msg, duration = 3800) {
       const t = document.getElementById('toast');
       document.getElementById('toast-text').textContent = msg;
       t.classList.remove('hidden');
@@ -736,6 +738,128 @@
       window._toastTimer = setTimeout(() => t.classList.add('hidden'), duration);
     }
 
+    // ==================== موتور هوشمند و ضدخطای Gemini API ====================
+    async function discoverModels(apiKey) {
+      if (cachedValidModels && cachedValidModels.length > 0) return cachedValidModels;
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        const all = (data.models || []).filter(m =>
+          m.name &&
+          m.name.includes('gemini') &&
+          !m.name.includes('embedding') &&
+          !m.name.includes('imagen') &&
+          !m.name.includes('veo') &&
+          !m.name.includes('tts') &&
+          !m.name.includes('audio') &&
+          (m.supportedGenerationMethods || []).includes('generateContent')
+        ).map(m => m.name);
+
+        // اولویت‌بندی هوشمند مدل‌های جدید و پایدار
+        const priorityKeywords = [
+          'gemini-3.0-flash',
+          'gemini-3-flash',
+          'gemini-2.5-pro',
+          'gemini-3.0-pro',
+          'gemini-2.5-flash',
+          'gemini-2.0-flash',
+          'flash',
+          'pro'
+        ];
+
+        all.sort((a, b) => {
+          let scoreA = 99, scoreB = 99;
+          for (let i = 0; i < priorityKeywords.length; i++) {
+            if (a.includes(priorityKeywords[i]) && scoreA === 99) scoreA = i;
+            if (b.includes(priorityKeywords[i]) && scoreB === 99) scoreB = i;
+          }
+          return scoreA - scoreB;
+        });
+
+        cachedValidModels = all;
+        return all;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function fetchAvailableModelsUI() {
+      const key = document.getElementById('cfg-gemini-key').value.trim();
+      if (!key) {
+        showToast('⚠️ ابتدا کلید API را در کادر بالا وارد کنید.');
+        return;
+      }
+      cachedValidModels = null;
+      showToast('⏳ در حال استعلام مدل‌های فعال اکانت شما از گوگل...');
+      const models = await discoverModels(key);
+      if (!models || models.length === 0) {
+        showToast('❌ استعلام ناموفق بود. کلید API یا اتصال VPN را بررسی کنید.');
+        return;
+      }
+      const sel = document.getElementById('cfg-gemini-model');
+      sel.innerHTML = `<option value="auto">✨ Auto (پیشنهادی: انتخاب خودکار از ${models.length} مدل فعال)</option>` +
+        models.map(m => `<option value="${m}">${m}</option>`).join('');
+      showToast(`✅ ${models.length} مدل فعال روی اکانت شما پیدا شد!`);
+    }
+
+    async function callGeminiSmart(parts) {
+      const apiKey = state.config.geminiKey;
+      const preferred = state.config.geminiModel || 'auto';
+
+      let candidateModels = [];
+      const discovered = await discoverModels(apiKey);
+
+      if (preferred !== 'auto') {
+        const cleanPref = preferred.startsWith('models/') ? preferred : `models/${preferred}`;
+        candidateModels.push(cleanPref);
+      }
+
+      if (discovered && discovered.length > 0) {
+        discovered.forEach(m => {
+          if (!candidateModels.includes(m)) candidateModels.push(m);
+        });
+      } else {
+        ['models/gemini-3.0-flash', 'models/gemini-2.5-pro', 'models/gemini-2.5-flash', 'models/gemini-2.0-flash'].forEach(m => {
+          if (!candidateModels.includes(m)) candidateModels.push(m);
+        });
+      }
+
+      let lastErrorText = '';
+      for (let i = 0; i < Math.min(candidateModels.length, 4); i++) {
+        const modelName = candidateModels[i];
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts }],
+              generationConfig: { responseMimeType: 'application/json' }
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            rawText = rawText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+            return JSON.parse(rawText);
+          }
+
+          lastErrorText = await res.text();
+          // اگر مدل 404 (حذف شده) یا 503 (شلوغ) یا 429 بود، خودکار برو سراغ مدل بعدی!
+          if (res.status === 404 || res.status === 503 || res.status === 429) {
+            continue;
+          } else {
+            break;
+          }
+        } catch (err) {
+          lastErrorText = err.message || String(err);
+        }
+      }
+      throw new Error(lastErrorText || 'خطا در ارتباط با سرور جمینای');
+    }
+
+    // بررسی لینک جادویی ورود فاطمه
     function checkMagicLinkConfig() {
       if (window.location.hash && window.location.hash.startsWith('#magic=')) {
         try {
@@ -1060,19 +1184,7 @@
           });
         }
 
-const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.config.geminiKey}`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    contents: [{ parts: [{ text: ... }] }],
-    generationConfig: { responseMimeType: 'application/json' }
-  })
-});
-
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
-        const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        const parsed = JSON.parse(rawJson);
+        const parsed = await callGeminiSmart(parts);
 
         const nowTime = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
         const mealItem = {
@@ -1380,16 +1492,7 @@ const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models
       if (!cal && state.config.geminiKey) {
         try {
           const w = state.profiles[state.activeProfile].stats.weight || 70;
-const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.config.geminiKey}`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    contents: [{ parts: [{ text: ... }] }],
-    generationConfig: { responseMimeType: 'application/json' }
-  })
-});
-          const data = await res.json();
-          const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
+          const parsed = await callGeminiSmart([{ text: `فردی با وزن ${w} کیلوگرم این فعالیت را انجام داده: «${title}». فقط یک JSON برگردان: {"calories": عدد کالری سوزانده شده}` }]);
           cal = Math.round(Number(parsed.calories) || 150);
         } catch (e) {
           cal = 150;
@@ -1455,16 +1558,7 @@ const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models
   ]
 }`;
 
-const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.config.geminiKey}`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    contents: [{ parts: [{ text: ... }] }],
-    generationConfig: { responseMimeType: 'application/json' }
-  })
-});
-        const data = await res.json();
-        const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
+        const parsed = await callGeminiSmart([{ text: prompt }]);
 
         box.innerHTML = `
           <div class="bg-indigo-50 dark:bg-indigo-950/50 p-3 rounded-2xl text-indigo-700 dark:text-indigo-300 font-bold">
@@ -1481,7 +1575,7 @@ const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models
           `).join('')}
         `;
       } catch (e) {
-        box.innerHTML = `<div class="text-rose-500 text-center py-4">خطا در دریافت پیشنهادها.</div>`;
+        box.innerHTML = `<div class="text-rose-500 text-center py-4">خطا در دریافت پیشنهادها: ${e.message || e}</div>`;
       }
     }
 
@@ -1807,8 +1901,10 @@ const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models
 
     function saveSettings() {
       state.config.geminiKey = document.getElementById('cfg-gemini-key').value.trim();
+      state.config.geminiModel = document.getElementById('cfg-gemini-model').value || 'auto';
       state.config.githubToken = document.getElementById('cfg-github-token').value.trim();
       state.config.gistId = document.getElementById('cfg-gist-id').value.trim();
+      cachedValidModels = null;
       saveLocalState();
       closeModal('modal-settings');
       showToast('✅ تنظیمات ذخیره شد!');
@@ -1843,6 +1939,7 @@ const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models
     function openModal(id) {
       if (id === 'modal-settings') {
         document.getElementById('cfg-gemini-key').value = state.config.geminiKey || '';
+        document.getElementById('cfg-gemini-model').value = state.config.geminiModel || 'auto';
         document.getElementById('cfg-github-token').value = state.config.githubToken || '';
         document.getElementById('cfg-gist-id').value = state.config.gistId || '';
       }

@@ -772,7 +772,7 @@
     async function discoverModels(apiKey) {
       if (cachedValidModels && cachedValidModels.length > 0) return cachedValidModels;
       try {
-        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + apiKey);
+        const res = await fetch('/api/gemini?endpoint=models&key=' + apiKey);
         if (!res.ok) return null;
         const data = await res.json();
         const all = (data.models || []).filter(function(m) {
@@ -838,7 +838,7 @@
       for (let i = 0; i < Math.min(candidateModels.length, 4); i++) {
         const modelName = candidateModels[i];
         try {
-          const res = await fetch('https://generativelanguage.googleapis.com/v1beta/' + modelName + ':generateContent?key=' + apiKey, {
+          const res = await fetch('/api/gemini?endpoint=' + encodeURIComponent(modelName + ':generateContent') + '&key=' + apiKey, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

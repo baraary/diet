@@ -1,0 +1,6 @@
+{
+  "name": "دستیار هوشمند تغذیه",
+  "description": "پیگیری هوشمند کالری، درشت‌مغذی‌ها، آب و وزن با هوش مصنوعی، تقویم شمسی و آشپزخانه رژیمی",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

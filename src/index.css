@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  html {
+    font-family: 'Vazirmatn', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: 'Vazirmatn', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, sans-serif;
+    margin: 0;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Dual-Layer Liquid Wave Animations */
+@keyframes waveFlowFront {
+  0% {
+    transform: translateX(0) translateZ(0) scaleY(1);
+  }
+  50% {
+    transform: translateX(25%) translateZ(0) scaleY(0.88);
+  }
+  100% {
+    transform: translateX(50%) translateZ(0) scaleY(1);
+  }
+}
+
+@keyframes waveFlowBack {
+  0% {
+    transform: translateX(50%) translateZ(0) scaleY(0.9);
+  }
+  50% {
+    transform: translateX(25%) translateZ(0) scaleY(1.08);
+  }
+  100% {
+    transform: translateX(0) translateZ(0) scaleY(0.9);
+  }
+}
+
+@keyframes bubbleRise {
+  0% {
+    transform: translateY(100%) scale(0.6);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateY(-220%) scale(1.15);
+    opacity: 0;
+  }
+}
+
+.wave-layer-front {
+  animation: waveFlowFront 5.5s linear infinite;
+}
+
+.wave-layer-back {
+  animation: waveFlowBack 8s ease-in-out infinite;
+}
+
+.water-bubble-1 {
+  animation: bubbleRise 3.8s ease-in infinite;
+}
+.water-bubble-2 {
+  animation: bubbleRise 4.9s ease-in infinite 1.4s;
+}
+.water-bubble-3 {
+  animation: bubbleRise 4.2s ease-in infinite 2.5s;
+}
+
+@keyframes pulseSubtle {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.015);
+  }
+}
+
+.meal-new-anim {
+  animation: pulseSubtle 0.6s ease-out 2;
+}
+
+/* ==========================================================================
+   3 Distinct Visual Theme Styles (Liquid Glass, Material You Tonal, Editorial)
+   ========================================================================== */
+
+/* 1. Liquid Glass (شیشه‌ای کریستالی با هاله نئونی هم‌رنگ پروفایل) */
+[data-theme-style="glass"] main .rounded-3xl {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background-color: rgba(255, 255, 255, 0.74) !important;
+  border: 1px solid color-mix(in srgb, var(--accent-hex, #4f46e5) 28%, rgba(255, 255, 255, 0.8)) !important;
+  box-shadow:
+    0 12px 32px -12px color-mix(in srgb, var(--accent-hex, #4f46e5) 18%, transparent),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.7) !important;
+}
+
+.dark [data-theme-style="glass"] main .rounded-3xl {
+  background-color: rgba(15, 23, 42, 0.66) !important;
+  border: 1px solid color-mix(in srgb, var(--accent-hex, #4f46e5) 38%, rgba(30, 41, 59, 0.8)) !important;
+  box-shadow:
+    0 14px 36px -12px color-mix(in srgb, var(--accent-hex, #4f46e5) 28%, rgba(0, 0, 0, 0.6)),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* 2. Material You Tonal (متریال پویا با سطوح رنگی یکپارچه از رنگ پروفایل) */
+[data-theme-style="material"] main .rounded-3xl {
+  border-radius: 2.1rem !important;
+  background-color: color-mix(in srgb, var(--accent-hex, #4f46e5) 9%, #ffffff) !important;
+  border: 1.5px solid color-mix(in srgb, var(--accent-hex, #4f46e5) 22%, transparent) !important;
+  box-shadow: none !important;
+}
+
+.dark [data-theme-style="material"] main .rounded-3xl {
+  border-radius: 2.1rem !important;
+  background-color: color-mix(in srgb, var(--accent-hex, #4f46e5) 15%, #0f172a) !important;
+  border: 1.5px solid color-mix(in srgb, var(--accent-hex, #4f46e5) 30%, transparent) !important;
+  box-shadow: none !important;
+}
+
+/* 3. Editorial Neo-Classic (کلاسیک کنتراست بالا با کادر هندسی و سایه تیز) */
+[data-theme-style="classic"] main .rounded-3xl {
+  border-radius: 1.15rem !important;
+  background-color: #ffffff !important;
+  border: 2px solid color-mix(in srgb, var(--accent-hex, #4f46e5) 55%, #0f172a) !important;
+  box-shadow: 4px 4px 0px color-mix(in srgb, var(--accent-hex, #4f46e5) 35%, #0f172a) !important;
+}
+
+.dark [data-theme-style="classic"] main .rounded-3xl {
+  border-radius: 1.15rem !important;
+  background-color: #0b1120 !important;
+  border: 2px solid color-mix(in srgb, var(--accent-hex, #4f46e5) 65%, #334155) !important;
+  box-shadow: 4px 4px 0px color-mix(in srgb, var(--accent-hex, #4f46e5) 45%, #020617) !important;
+}
